@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Menu Selector</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Day Selector Styling */
+        .selector-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .selector-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            color: #000000;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: #000000;
+        }
+
+        /* Meal Count Display */
+        .meal-count {
+            font-size: 0.9rem;
+            color: #5f6368;
+            margin-bottom: 12px;
+        }
+
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .meal-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .meal-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .badge.veg {
+            background-color: #e6f4ea;
+            color: #137333;
+        }
+
+        .badge.non-veg {
+            background-color: #f1f3f4;
+            color: #5f6368;
+        }
+
+        .meal-description {
+            font-size: 0.95rem;
+            color: #333333;
+        }
+
+        .meal-price {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Weekly Menu</h1>
+
+        <!-- Labeled Day Selector -->
+        <div class="selector-container">
+            <label for="day-select" class="selector-label">Select Day:</label>
+            <select id="day-select">
+                <option value="monday" selected>Monday</option>
+                <option value="tuesday">Tuesday</option>
+                <option value="wednesday">Wednesday</option>
+            </select>
+        </div>
+
+        <div id="meal-count" class="meal-count"></div>
+
+        <div id="menu-container" class="menu-grid">
+            <!-- Meal cards will be injected here -->
+        </div>
+    </main>
+
+    <script>
+        // Simulated menu-data.json structure kept directly inside app logic
+        const menuData = {
+            "monday": [
+                {
+                    name: "Breakfast: Avocado Toast & Egg",
+                    description: "Toasted sourdough bread with smashed avocado, poached egg, and a side of cherry tomatoes.",
+                    price: 8500,
+                    isVegetarian: true
+                },
+                {
+                    name: "Lunch: Grilled Chicken Salad",
+                    description: "Mixed greens, grilled chicken breast, cucumbers, and a light vinaigrette dressing.",
+                    price: 11000,
+                    isVegetarian: false
+                },
+                {
+                    name: "Dinner: Mushroom Risotto",
+                    description: "Creamy arborio rice cooked with wild mushrooms, garlic, parmesan, and vegetable broth.",
+                    price: 13500,
+                    isVegetarian: true
+                }
+            ],
+            "tuesday": [
+                {
+                    name: "Breakfast: Greek Yogurt & Berries",
+                    description: "Thick Greek yogurt topped with fresh blueberries, strawberries, and organic honey.",
+                    price: 7000,
+                    isVegetarian: true
+                },
+                {
+                    name: "Lunch: Beef Bulgogi Bowl",
+                    description: "Marinated sliced beef served over steamed white rice with sautéed vegetables.",
+                    price: 12500,
+                    isVegetarian: false
+                },
+                {
+                    name: "Dinner: Kimchi Fried Rice",
+                    description: "Stir-fried rice with aged kimchi, pork belly chunks, topped with a fried egg.",
+                    price: 9500,
+                    isVegetarian: false
+                }
+            ],
+            "wednesday": [
+                {
+                    name: "Breakfast: Oatmeal & Banana",
+                    description: "Warm rolled oats in almond milk, sliced bananas, and a dash of cinnamon.",
+                    price: 6000,
+                    isVegetarian: true
+                },
+                {
+                    name: "Lunch: Tomato Basil Pasta",
+                    description: "Al dente spaghetti tossed in a rich homemade tomato and fresh basil sauce.",
+                    price: 10000,
+                    isVegetarian: true
+                },
+                {
+                    name: "Dinner: Pan-Seared Salmon",
+                    description: "Fresh salmon fillet served with roasted asparagus and lemon-herb butter sauce.",
+                    price: 15000,
+                    isVegetarian: false
+                }
+            ]
+        };
+
+        function renderMenu(day) {
+            const container = document.getElementById('menu-container');
+            const countContainer = document.getElementById('meal-count');
+            container.innerHTML = '';
+
+            const meals = menuData[day] || [];
+            
+            // Update meal count text
+            countContainer.textContent = `Showing ${meals.length} meal(s) for this day`;
+
+            meals.forEach(meal => {
+                const card = document.createElement('div');
+                card.className = 'meal-card';
+
+                const badgeClass = meal.isVegetarian ? 'veg' : 'non-veg';
+                const badgeText = meal.isVegetarian ? 'Vegetarian' : 'Non-Vegetarian';
+
+                card.innerHTML = `
+                    <div class="meal-header">
+                        <span class="meal-name">${meal.name}</span>
+                        <span class="badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                    <p class="meal-description">${meal.description}</p>
+                    <div class="meal-price">${meal.price.toLocaleString()} KRW</div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Event listener for changing the dropdown day selector
+        document.getElementById('day-select').addEventListener('change', (event) => {
+            renderMenu(event.target.value);
+        });
+
+        // Initialize on page load (defaults to Monday)
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenu('monday');
+        });
+    </script>
+</body>
+</html>
